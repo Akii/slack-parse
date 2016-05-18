@@ -25,7 +25,10 @@ data ChannelSubType = FileShare | ChannelJoin deriving (Show)
 -- todo: date time parsing, sub type dependent data
 -- todo: check why I can't write `data Message = Message`
 -- todo: should assign channelId or put into channel
-data ChatMessage = ChatMessage User ChannelType (Maybe ChannelSubType) Text String deriving (Show)
+data ChatMessage = ChatMessage UserId ChannelType (Maybe ChannelSubType) Text String deriving (Show)
+
+appendMessages :: Channel -> [ChatMessage] -> Channel
+appendMessages (Channel id name msgs) app = Channel id name $ msgs ++ app
 
 -- FromJSON instances
 instance FromJSON User where
@@ -49,26 +52,24 @@ instance FromJSON Channel where
 instance FromJSON ChannelType where
   parseJSON (String s) = case s of
     "message" -> return $ Message
-    _         -> fail "I've no idea"
+    _         -> fail "Unknown channel type"
 
-  parseJSON _ = fail "just strings bro"
+  parseJSON _ = fail "Can only convert a string to a channel type"
 
 instance FromJSON ChannelSubType where
   parseJSON (String s) = case s of
     "file_share"    -> return $ FileShare
     "channel_join"  -> return $ ChannelJoin
-    _               -> fail "I've no idea"
+    _               -> fail "Unknown channel subtype"
 
-  parseJSON _ = fail "just strings bro"
+  parseJSON _ = fail "Can only convert a string to a channel subtype"
 
-parseChatMessage :: [User] -> Value -> Maybe ChatMessage
-parseChatMessage us = parseMaybe . withObject "chat message with user" $ \o -> do
-  uId     <- o .:  "user"
-  cType   <- o .:  "type"
-  scType  <- o .:? "subtype"
-  txt     <- o .:  "text"
-  ts      <- o .:  "ts"
+instance FromJSON ChatMessage where
+  parseJSON (Object v) = ChatMessage
+    <$> v .:  "user"
+    <*> v .:  "type"
+    <*> v .:? "subtype"
+    <*> v .:  "text"
+    <*> v .:  "ts"
 
-  case filter (\u -> id u == uId) us of
-    (u:_)  -> return $ ChatMessage u cType scType txt ts
-    _      -> return $ ChatMessage (Unknown uId) cType scType txt ts
+  parseJSON _ = empty

@@ -5,6 +5,7 @@ import            Data.Aeson
 import qualified  Data.ByteString.Lazy as BS
 import            Control.Monad.Trans.Maybe
 import            Control.Monad.Trans.Class (lift)
+import            System.Directory (getDirectoryContents)
 
 import Slack.Internal.Types
 
@@ -17,9 +18,9 @@ load fp = runMaybeT $ do
   chans <- MaybeT (readChannels fp)
 
   lift $ putStrLn "Loading channel messages.."
---  map readMessages
+  chans' <- MaybeT (readMessages fp $ head chans)
 
-  return []
+  return chans
 
 readUsers :: FilePath -> IO (Maybe [User])
 readUsers fp = parseFile $ fp ++ "/users.json"
@@ -27,8 +28,18 @@ readUsers fp = parseFile $ fp ++ "/users.json"
 readChannels :: FilePath -> IO (Maybe [Channel])
 readChannels fp = parseFile $ fp ++ "/channels.json"
 
-readMessages :: FilePath -> Channel -> IO (Channel)
-readMessages = undefined
+readMessages :: FilePath -> Channel -> IO (Maybe [ChatMessage])
+readMessages fp c@(Channel id name _) = do
+  let bpath = fp ++ "/" ++ name ++ "/"
+
+  dirs <- getDirectoryContents bpath
+
+  let jsonFiles = map ((++) bpath) $ drop 3 dirs
+
+  -- todo: parse, concat
+  putStrLn $ show jsonFiles
+
+  return Nothing
 
 parseFile :: FromJSON a => FilePath -> IO (Maybe a)
 parseFile fp = do
