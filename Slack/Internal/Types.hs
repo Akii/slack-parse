@@ -19,16 +19,19 @@ newtype ChannelId = ChannelId String deriving (Show, FromJSON)
 
 data Channel = Channel ChannelId String [ChatMessage] deriving (Show)
 
-data ChannelType = Message deriving (Show)
-data ChannelSubType = FileShare | ChannelJoin deriving (Show)
+data MessageType = Message | UnknownMsgType Text deriving (Show)
+
+data MassgeSubType = FileShare
+                    | ChannelJoin
+                    | ChannelPurpose
+                    | ChannelArchive
+                    | UnknownSubMsgType Text
+                    deriving (Show)
 
 -- todo: date time parsing, sub type dependent data
 -- todo: check why I can't write `data Message = Message`
 -- todo: should assign channelId or put into channel
-data ChatMessage = ChatMessage UserId ChannelType (Maybe ChannelSubType) Text String deriving (Show)
-
-appendMessages :: Channel -> [ChatMessage] -> Channel
-appendMessages (Channel id name msgs) app = Channel id name $ msgs ++ app
+data ChatMessage = ChatMessage UserId MessageType (Maybe MassgeSubType) Text String deriving (Show)
 
 -- FromJSON instances
 instance FromJSON User where
@@ -49,18 +52,20 @@ instance FromJSON Channel where
 
   parseJSON _ = empty
 
-instance FromJSON ChannelType where
+instance FromJSON MessageType where
   parseJSON (String s) = case s of
     "message" -> return $ Message
-    _         -> fail "Unknown channel type"
+    msg       -> return $ UnknownMsgType msg
 
   parseJSON _ = fail "Can only convert a string to a channel type"
 
-instance FromJSON ChannelSubType where
+instance FromJSON MassgeSubType where
   parseJSON (String s) = case s of
-    "file_share"    -> return $ FileShare
-    "channel_join"  -> return $ ChannelJoin
-    _               -> fail "Unknown channel subtype"
+    "file_share"        -> return $ FileShare
+    "channel_join"      -> return $ ChannelJoin
+    "channel_purpose"   -> return $ ChannelPurpose
+    "channel_archive"   -> return $ ChannelArchive
+    msg                 -> return $ UnknownSubMsgType msg
 
   parseJSON _ = fail "Can only convert a string to a channel subtype"
 
