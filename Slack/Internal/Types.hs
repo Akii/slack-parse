@@ -2,36 +2,49 @@ module Slack.Internal.Types where
 
 import Prelude hiding (id)
 import Data.Aeson
-import Data.Aeson.Types (parseMaybe)
 import Data.Text (Text)
+import Data.Map (fromList, Map)
 import Control.Applicative (empty)
 
-newtype UserId = UserId String deriving (Show, Eq, FromJSON)
+newtype UserId = UserId String deriving (Show, Eq, Ord, FromJSON)
 
--- todo: could have a profile
-data User = User { id   :: UserId
+-- fix unknown user
+data User = User { uId   :: UserId
                  , nick :: String
                  , name :: Maybe String
-                 }
-          | Unknown UserId deriving (Show)
+                 } deriving (Show)
 
-newtype ChannelId = ChannelId String deriving (Show, FromJSON)
+newtype ChannelId = ChannelId String deriving (Show, Eq, Ord, FromJSON)
 
-data Channel = Channel ChannelId String [ChatMessage] deriving (Show)
+data Channel = Channel { cId    :: ChannelId
+                       , title  :: String
+                       , msgs   :: [ChatMessage]
+                       } deriving (Show)
 
 data MessageType = Message | UnknownMsgType Text deriving (Show)
 
 data MassgeSubType = FileShare
-                    | ChannelJoin
-                    | ChannelPurpose
-                    | ChannelArchive
-                    | UnknownSubMsgType Text
-                    deriving (Show)
+                   | ChannelJoin
+                   | ChannelPurpose
+                   | ChannelArchive
+                   | UnknownSubMsgType Text
+                   deriving (Show)
 
 -- todo: date time parsing, sub type dependent data
 -- todo: check why I can't write `data Message = Message`
 -- todo: should assign channelId or put into channel
 data ChatMessage = ChatMessage UserId MessageType (Maybe MassgeSubType) Text String deriving (Show)
+
+data SlackArchive = SlackArchive { users    :: Map UserId User
+                                 , channels :: Map ChannelId Channel
+                                 }
+
+mkSlackArchive :: [User] -> [Channel] -> SlackArchive
+mkSlackArchive us cs =
+  let uMap = fromList $ map (\u -> (uId u,u)) us
+      cMap = fromList $ map (\c -> (cId c,c)) cs
+  in
+    SlackArchive uMap cMap
 
 -- FromJSON instances
 instance FromJSON User where

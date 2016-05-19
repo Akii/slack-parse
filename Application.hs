@@ -26,12 +26,8 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
                                              mkRequestLogger, outputFormat)
 import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
-import qualified Data.Text as T
-import System.Directory (getCurrentDirectory)
-import Control.Monad.Trans.Maybe
+import System.Directory                     (getCurrentDirectory)
 
-import Slack.Internal.Types
-import Slack.Internal.Parsing
 import Slack.Slack
 
 -- Import all relevant handler modules here.
