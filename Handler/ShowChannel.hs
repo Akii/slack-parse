@@ -1,7 +1,7 @@
-module Handler.Comment where
+module Handler.ShowChannel where
 
 import Import
 
-postCommentR :: Handler Value
-postCommentR =
+getShowChannelR :: Handler Html
+getShowChannelR =
     error "The simple scaffolding does not support authentication or a database for storing comments"

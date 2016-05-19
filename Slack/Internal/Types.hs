@@ -8,7 +8,6 @@ import Control.Applicative (empty)
 
 newtype UserId = UserId String deriving (Show, Eq, Ord, FromJSON)
 
--- fix unknown user
 data User = User { uId   :: UserId
                  , nick :: String
                  , name :: Maybe String

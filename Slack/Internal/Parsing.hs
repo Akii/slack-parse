@@ -13,38 +13,45 @@ import Slack.Internal.Types
 load :: FilePath -> IO (Maybe SlackArchive)
 load fp = runMaybeT $ do
   lift $ putStrLn "Loading users..."
-  users <- MaybeT (readUsers fp)
+  users <- readUsers fp
 
   lift $ putStrLn "Loading channels..."
-  chans <- MaybeT (readChannels fp)
+  chans <- readChannels fp
 
   lift $ putStrLn "Loading channel messages.."
-  chans' <- mapM (\c -> MaybeT (loadChannelMessages fp c)) chans
+  chans' <- mapM (loadChannelMessages fp) chans
 
+  -- less readable?
+  -- fmap (mkSlackArchive users) $ mapM (MaybeT . loadChannelMessages fp) chans
   return $ mkSlackArchive users chans'
 
-readUsers :: FilePath -> IO (Maybe [User])
-readUsers fp = parseFile $ fp ++ "/users.json"
+readUsers :: FilePath -> MaybeT IO ([User])
+readUsers fp = MaybeT . parseFile $ fp ++ "/users.json"
 
-readChannels :: FilePath -> IO (Maybe [Channel])
-readChannels fp = parseFile $ fp ++ "/channels.json"
+readChannels :: FilePath -> MaybeT IO ([Channel])
+readChannels fp = MaybeT . parseFile $ fp ++ "/channels.json"
 
-loadChannelMessages :: FilePath -> Channel -> IO (Maybe Channel)
-loadChannelMessages fp (Channel cId name _) = do
-  let bpath = fp ++ "/" ++ name ++ "/"
+loadChannelMessages :: FilePath -> Channel -> MaybeT IO (Channel)
+loadChannelMessages fp (Channel cId cName _) =
+  do
+    channelFiles <- lift $ getDirectoryContents basePath
+    chatMsgs <- readMessages $ (prefixBasePath . filterJsonFiles) channelFiles basePath
 
-  dirs <- getDirectoryContents bpath
+    -- why does this work
+    return $ Channel cId cName chatMsgs
+  where
+    basePath = fp ++ "/" ++ cName ++ "/"
 
-  let jsonFiles = map ((++) bpath) $ filter (".json" `isSuffixOf`) dirs
+    filterJsonFiles :: [FilePath] -> [FilePath]
+    filterJsonFiles = filter (".json" `isSuffixOf`)
 
-  parsed <- readMessages jsonFiles
+    prefixBasePath :: [FilePath] -> FilePath -> [FilePath]
+    prefixBasePath fps prefix = map ((++) prefix) fps
 
-  return $ fmap (Channel cId name) parsed
-
-readMessages :: [FilePath] -> IO (Maybe [ChatMessage])
+readMessages :: [FilePath] -> MaybeT IO ([ChatMessage])
 readMessages fps =
   do
-    runMaybeT $ fmap concat $ mapM (MaybeT . readMessage) fps
+    fmap concat $ mapM (MaybeT . readMessage) fps
   where
     readMessage :: FilePath -> IO (Maybe [ChatMessage])
     readMessage = parseFile

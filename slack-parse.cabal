@@ -21,7 +21,7 @@ library
                      Settings.StaticFiles
                      Handler.Common
                      Handler.Home
-                     Handler.Comment
+                     Handler.ShowChannel
                      Slack.Slack
                      Slack.Internal.Parsing
                      Slack.Internal.Types
