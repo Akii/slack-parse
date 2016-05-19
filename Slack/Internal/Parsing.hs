@@ -38,12 +38,17 @@ loadChannelMessages fp (Channel id name _) = do
 
   let jsonFiles = map ((++) bpath) $ filter (".json" `isSuffixOf`) dirs
 
-  parsed <- readMessages jsonFiles
+  parsed <- readMessages' jsonFiles
 
   return $ fmap (Channel id name) parsed
 
 readMessages :: [FilePath] -> IO (Maybe [ChatMessage])
-readMessages fps = fmap (fmap concat . sequence) (mapM parseFile fps)
+readMessages fps =
+  do
+    runMaybeT $ fmap concat $ mapM (MaybeT . readMessage) fps
+  where
+    readMessage :: FilePath -> IO (Maybe [ChatMessage])
+    readMessage = parseFile
 
 parseFile :: FromJSON a => FilePath -> IO (Maybe a)
 parseFile fp = decode <$> BS.readFile fp
