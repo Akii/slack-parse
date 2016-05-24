@@ -1,1 +1,22 @@
-<h1.jumbotron>
+<div.row>
+  <div.col-sm-3 .col-md-2 .sidebar>
+    <ul.list-group>
+      <li.list-group-item>Channel List
+      $forall c <- chans
+        <a.list-group-item href="@{ChannelR $ cId c}">
+          <span.badge>#{ length $ msgs c}
+          #{ title c}
+
+  <div.col-sm-9 .col-md-10 .main>
+
+    $if (isJust selChan)
+      $maybe chan <- selChan
+        <div.table-responsive>
+          <table.table .table-striped>
+            $forall msg <- msgs chan
+              <tbody>
+                <tr>
+                  <td>#{ show msg }
+    $else
+      <h1.jumbotron>
+        Select a channel

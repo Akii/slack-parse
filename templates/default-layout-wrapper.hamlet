@@ -43,10 +43,13 @@ $newline never
     <script>
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
   <body>
-    <div class="container">
-      <header>
-      <div id="main" role="main">
-        ^{pageBody pc}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="@{IndexR}">Slack Archive
+
+    <div class="container-fluid" style="padding-top: 60px;">
+      ^{pageBody pc}
 
     $maybe analytics <- appAnalytics $ appSettings master
       <script>

@@ -20,6 +20,8 @@ data MessageType = Message
 
 data MassgeSubType = FileShare
                    | ChannelJoin
+                   | ChannelLeave
+                   | MeMessage
                    | ChannelPurpose
                    | ChannelArchive
                    | UnknownSubMsgType Text
@@ -37,6 +39,8 @@ instance FromJSON MassgeSubType where
   parseJSON (String s) = case s of
     "file_share"        -> return $ FileShare
     "channel_join"      -> return $ ChannelJoin
+    "channel_leave"     -> return $ ChannelLeave
+    "me_message"        -> return $ MeMessage
     "channel_purpose"   -> return $ ChannelPurpose
     "channel_archive"   -> return $ ChannelArchive
     msg                 -> return $ UnknownSubMsgType msg

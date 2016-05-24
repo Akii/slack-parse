@@ -1,12 +1,15 @@
 module Slack.Internal.Types
   ( ChannelId(..)
   , Channel(..)
-  , MessageId
+  , MessageId(..)
   , ChatMessage(..)
   , SlackArchive(..)
   , mkSlackArchive
+  , getUser
+  , getChannel
   , countNumberOfChatMessages
-  , UserId
+  , mergeArchive
+  , UserId(..)
   , User(..)
   ) where
 

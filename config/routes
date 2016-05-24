@@ -3,5 +3,5 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/ HomeR GET
-/channel/#ChannelId ChannelR GET
+/ IndexR GET
+/c/#ChannelId ChannelR GET
