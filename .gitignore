@@ -20,3 +20,4 @@ ddd
 .dir-locals.el
 .ghci
 .idea/
+Test*.hs

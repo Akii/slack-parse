@@ -4,4 +4,4 @@
 /robots.txt RobotsR GET
 
 / HomeR GET
-/show/:name ShowChannelR GET
+/channel/#ChannelId ChannelR GET

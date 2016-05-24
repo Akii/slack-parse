@@ -8,7 +8,9 @@ import Yesod.Default.Util          (addStaticContentExternal)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
-import Slack.Slack (SlackArchive)
+import qualified Data.Text as T
+
+import Slack (SlackArchive, ChannelId(..))
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -133,3 +135,8 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 -- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
+
+instance PathPiece ChannelId where
+    fromPathPiece t = Just (ChannelId $ T.unpack t)
+
+    toPathPiece (ChannelId t) = T.pack t

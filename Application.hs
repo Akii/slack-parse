@@ -28,13 +28,13 @@ import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
 import System.Directory                     (getCurrentDirectory)
 
-import Slack.Slack
+import Slack
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common
 import Handler.Home
-import Handler.ShowChannel
+import Handler.Channel
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
@@ -55,8 +55,12 @@ makeFoundation appSettings = do
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
 
+    putStrLn "Loading archives..."
+
     currDir <- getCurrentDirectory
     slackArchive <- load $ currDir ++ "/ddd"
+
+    putStrLn "Done."
 
     -- Return the foundation
     return App {..}

@@ -1,4 +1,4 @@
-module Slack.Internal.Parsing (load) where
+module Slack.Internal.Reading (load) where
 
 import            Prelude
 import            Data.Aeson
@@ -12,18 +12,10 @@ import Slack.Internal.Types
 
 load :: FilePath -> IO (Maybe SlackArchive)
 load fp = runMaybeT $ do
-  lift $ putStrLn "Loading users..."
   users <- readUsers fp
-
-  lift $ putStrLn "Loading channels..."
   chans <- readChannels fp
 
-  lift $ putStrLn "Loading channel messages.."
-  chans' <- mapM (loadChannelMessages fp) chans
-
-  -- less readable?
-  -- fmap (mkSlackArchive users) $ mapM (MaybeT . loadChannelMessages fp) chans
-  return $ mkSlackArchive users chans'
+  fmap (mkSlackArchive users) $ mapM (loadChannelMessages fp) chans
 
 readUsers :: FilePath -> MaybeT IO ([User])
 readUsers fp = MaybeT . parseFile $ fp ++ "/users.json"
@@ -37,7 +29,6 @@ loadChannelMessages fp (Channel cId cName _) =
     channelFiles <- lift $ getDirectoryContents basePath
     chatMsgs <- readMessages $ (prefixBasePath . filterJsonFiles) channelFiles basePath
 
-    -- why does this work
     return $ Channel cId cName chatMsgs
   where
     basePath = fp ++ "/" ++ cName ++ "/"
